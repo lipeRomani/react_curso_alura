@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import InputCustomizado from './componentes/InputCustomizado';
 import SubmitCustomizado from './componentes/SubmitCustomizado';
 import $ from 'jquery';
+import PubSub from 'pubsub-js';
 
 class FormAutor extends Component {
     
@@ -38,7 +39,7 @@ class FormAutor extends Component {
             success: (resp) => {
                 console.log("Cadastro com sucesso");
                 this.setState({nome:"", email:"", senha:"" });
-                this.props.callbackTable(resp);
+                PubSub.publish('author-list-update', resp);
             },
             error: (error) => {
                 console.log('cadastro com erro');
@@ -94,7 +95,6 @@ export default class AutorBox extends Component {
     constructor() {
         super();
         this.state = {lista : []};
-        this.updateAutorTable = this.updateAutorTable.bind(this); 
     }
 
     componentDidMount() {
@@ -105,16 +105,16 @@ export default class AutorBox extends Component {
                 this.setState({lista:resp});
             }
         });
-    }
 
-    updateAutorTable(novaLista) {
-        this.setState({lista : novaLista})
+        PubSub.subscribe('author-list-update', (topic, message) => {
+            this.setState({lista: message});
+        });
     }
 
     render() {
         return (
             <div>
-                <FormAutor callbackTable={this.updateAutorTable} />
+                <FormAutor />
                 <TableAutor lista={this.state.lista}/>
             </div>
         );
