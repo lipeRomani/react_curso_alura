@@ -3,6 +3,7 @@ import InputCustomizado from './componentes/InputCustomizado';
 import SubmitCustomizado from './componentes/SubmitCustomizado';
 import $ from 'jquery';
 import PubSub from 'pubsub-js';
+import TratadorError from "./TratadorError";
 
 class FormAutor extends Component {
     
@@ -37,12 +38,17 @@ class FormAutor extends Component {
             contentType: "application/json",
             data: JSON.stringify({nome: this.state.nome, email: this.state.email, senha:this.state.senha}),
             success: (resp) => {
-                console.log("Cadastro com sucesso");
                 this.setState({nome:"", email:"", senha:"" });
                 PubSub.publish('author-list-update', resp);
             },
-            error: (error) => {
-                console.log('cadastro com erro');
+            error: (resp) => {
+                if (resp.status === 400) {
+                    let err = JSON.parse(resp.responseText);
+                    new TratadorError().errorPublish(err.errors);
+                }
+            },
+            beforeSend: () => {
+                PubSub.publish("limpa-error", {});
             }
         })
     }
