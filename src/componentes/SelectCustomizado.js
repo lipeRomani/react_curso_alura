@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import PubSub from 'pubsub-js';
 
-export default class InputCustomizado extends Component {
+export default class SelectCustomizado extends Component 
+{
 
     constructor()
     {
@@ -28,13 +29,21 @@ export default class InputCustomizado extends Component {
 
     render()
     {
-        return(
+        return (
             <div className="pure-control-group">
-                <label htmlFor={this.props.id}>{this.props.label}</label> 
-                <input id={this.props.id} type={this.props.type} name={this.props.name} value={this.props.value} onChange={this.props.onChange}  />
+                <label htmlFor={this.props.id}>{this.props.label}</label>
+                <select name={this.props.name} id={this.props.id} value={this.props.value} onChange={this.props.onChange}>
+                    <option value="">{this.props.emptyText}</option>
+                    {
+                        this.props.lista.map((obj) => {
+                            return (
+                                <option key={obj[this.props.valueField]} value={obj[this.props.valueField]}>{obj[this.props.labelField]}</option>        
+                            );
+                        })
+                    }
+                </select>
                 <span className="error"> {this.state.msgError}</span>                  
             </div>
         );
     }
-
 }
