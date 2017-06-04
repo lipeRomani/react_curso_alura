@@ -3,7 +3,8 @@ import $ from 'jquery';
 import InputCustomizado from './componentes/InputCustomizado';
 import SubmitCustomizado from './componentes/SubmitCustomizado';
 import SelectCustomizado from './componentes/SelectCustomizado';
-
+import TratadorError from './TratadorError';
+import PubSub from 'pubsub-js';
 
 class FormLivro extends Component {
     
@@ -21,7 +22,7 @@ class FormLivro extends Component {
             preco  : parseFloat(this.state.preco),
             autorId: this.state.autorId 
         }
-        console.log(livro);
+        
         $.ajax({
             method : "post",
             url:"http://localhost:8080/api/livros",
@@ -29,9 +30,14 @@ class FormLivro extends Component {
             data : JSON.stringify(livro),
             success: (resp) => {
                 this.props.handleRefresh(resp);
+                this.setState({titulo:'', preco:0.0, autorId:''});
             }, 
             error: (resp) => {
-                console.log(resp)
+                let err = resp.responseJSON;
+                new TratadorError().errorPublish(err.errors);
+            },
+            beforeSend: () => {
+                PubSub.publish("limpa-error", {});
             }
         });
     }
@@ -69,7 +75,7 @@ class FormLivro extends Component {
                     <SelectCustomizado 
                         id="autorId" 
                         name="autorId"
-                        value={this.state.autor}
+                        value={this.state.autorId}
                         label="Autor"
                         onChange={this.handleInputChange}
                         emptyText="Selecione um autor"
